@@ -38,7 +38,7 @@
 </head>
 <body>
     <h1>Synchronized Video Stream (Sync to 12:00 PM)</h1>
-    <video id="video" autoplay></video>
+    <video id="video" autoplay muted></video>
     <button id="fullscreen-btn">Go Fullscreen</button>
 
     <script>
@@ -49,7 +49,7 @@
         // Set a predefined start time (12:00 PM today)
         function getPredefinedStartTime() {
             const startTime = new Date();
-            startTime.setHours(15, 0, 0, 0); // Set to 12:00 PM today
+            startTime.setHours(12, 0, 0, 0); // Set to 12:00 PM today
             return startTime;
         }
 
@@ -61,25 +61,24 @@
                 hls.attachMedia(video);
 
                 hls.on(Hls.Events.MANIFEST_PARSED, function() {
-                    console.log("Manifest parsed, starting playback...");
                     video.play();
-
-                    // Set the video to the correct starting time based on the offset
-                    video.currentTime = startTimeOffset;
+                    video.currentTime = startTimeOffset; // Set the correct starting time based on the offset
                 });
 
                 hls.on(Hls.Events.ERROR, function(event, data) {
-                    console.error("HLS.js Error:", data);
-                    if (data.fatal) {
-                        alert('An error occurred while loading the stream.');
-                    }
+                    // Suppressed error messages and alerts
+                    // console.error("HLS.js Error:", data);
+                    // if (data.fatal) {
+                    //     alert('An error occurred while loading the stream.');
+                    // }
                 });
             } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
                 video.src = url;
                 video.play();
                 video.currentTime = startTimeOffset; // Set the correct start time
             } else {
-                alert('Your browser does not support live streaming.');
+                // Suppressed error message
+                // alert('Your browser does not support live streaming.');
             }
         }
 
@@ -92,13 +91,10 @@
             // If the current time is after the predefined start time, calculate the start time offset
             if (timeDifference >= 0) {
                 const startTimeOffset = timeDifference / 1000; // Convert milliseconds to seconds
-                console.log(`Current time is: ${currentTime}`);
-                console.log(`Start time offset is: ${startTimeOffset} seconds`);
                 loadStream(m3u8Url, startTimeOffset); // Start stream at the correct offset
             } else {
                 // If it's before the predefined start time, wait until the start time
                 const waitTime = Math.abs(timeDifference);
-                console.log(`Waiting for ${Math.floor(waitTime / 1000)} seconds...`);
                 setTimeout(() => {
                     const startTimeOffset = 0; // Start at the beginning of the stream
                     loadStream(m3u8Url, startTimeOffset);
@@ -179,6 +175,14 @@
         if (localStorage.getItem('syncStartTime')) {
             syncWithStartTime(); // Always sync to the stored start time
         }
+
+        // Refresh local time and play immediately on video click/touch
+        video.addEventListener('click', function() {
+            const currentSyncTime = new Date().getTime();
+            localStorage.setItem('syncStartTime', currentSyncTime); // Update sync time
+            syncWithStartTime(); // Refresh the video to the latest time
+            video.play(); // Play immediately
+        });
     </script>
 </body>
 </html>
