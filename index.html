@@ -41,7 +41,7 @@
 </head>
 <body>
     <h1>Synchronized Video Stream (Sync to 12:00 PM)</h1>
-    <video id="video" autoplay muted></video>
+    <video id="video" autoplay></video>
     <div id="button-container">
         <button id="fullscreen-btn">Go Fullscreen</button>
         <button id="refresh-btn">Refresh</button>
@@ -56,7 +56,7 @@
         // Set a predefined start time (12:00 PM today)
         function getPredefinedStartTime() {
             const startTime = new Date();
-            startTime.setHours(15, 0, 0, 0); // Set to 12:00 PM today
+            startTime.setHours(12, 0, 0, 0); // Set to 12:00 PM today
             return startTime;
         }
 
@@ -68,8 +68,9 @@
                 hls.attachMedia(video);
 
                 hls.on(Hls.Events.MANIFEST_PARSED, function() {
-                    video.play();
                     video.currentTime = startTimeOffset; // Set the correct starting time based on the offset
+                    video.muted = false; // Ensure unmuted
+                    video.play(); // Play immediately
                 });
 
                 hls.on(Hls.Events.ERROR, function(event, data) {
@@ -77,7 +78,8 @@
                 });
             } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
                 video.src = url;
-                video.play();
+                video.muted = false; // Ensure unmuted
+                video.play(); // Play immediately
                 video.currentTime = startTimeOffset; // Set the correct start time
             } else {
                 // Suppressed error message
@@ -119,19 +121,21 @@
 
         // Refresh button functionality
         function refreshVideo() {
+            video.pause(); // Pause before refreshing
             syncWithStartTime(); // Re-sync the video to the local time
         }
+
+        // Auto-play and unmute on first load
+        window.addEventListener('load', function() {
+            video.muted = false; // Unmute the video
+            syncWithStartTime(); // Synchronize the video when the page loads
+        });
 
         // Attach fullscreen button functionality
         fullscreenBtn.addEventListener('click', toggleFullScreen);
 
         // Attach refresh button functionality
         refreshBtn.addEventListener('click', refreshVideo);
-
-        // Auto sync on page load
-        window.addEventListener('load', function() {
-            syncWithStartTime(); // Synchronize the video when the page loads
-        });
     </script>
 </body>
 </html>
