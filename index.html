@@ -24,23 +24,49 @@
             flex-direction: column; /* Stack player and button vertically */
         }
 
+        /* Krishna color banners - expanded to full width and larger height */
+        .banner {
+            width: 100%;
+            background-color: #1E90FF; /* Krishna's blue color */
+            color: #FFD700; /* Krishna's golden color */
+            padding: 40px 0; /* Increased padding to make the banner larger */
+            font-size: 48px; /* Larger text size */
+            font-weight: bold;
+            text-align: center;
+            position: absolute;
+            z-index: 10;
+            box-sizing: border-box;
+        }
+
+        .top-banner {
+            top: 0;
+            height: 15%; /* Adjust height to 15% of the video */
+        }
+
+        .bottom-banner {
+            bottom: 0;
+            height: 15%; /* Adjust height to 15% of the video */
+        }
+
         #jwplayer-container-wrapper {
             position: relative;
-            width: 100%; /* Full width of the wrapper */
+            width: 100%;
             height: 100vh; /* Full height of the wrapper */
             max-width: 100%;
             max-height: 100vh;
-            padding: 0; /* Remove any padding */
+            padding: 0;
             border: 5px solid yellow; /* Yellow border */
             border-radius: 8px; /* Rounded corners */
             background-color: #000; /* Black background */
-            box-sizing: border-box; /* Ensure the border is within the element */
+            box-sizing: border-box;
+            padding-top: 15%; /* To ensure space for top banner */
+            padding-bottom: 15%; /* To ensure space for bottom banner */
         }
 
         #jwplayer-container {
             width: 100%;
             height: 100%;
-            box-sizing: border-box; /* Include border in the total size */
+            box-sizing: border-box;
         }
 
         /* Hide all player controls */
@@ -48,25 +74,29 @@
             display: none !important;
         }
 
-        /* Watermark styling */
-        #watermark {
+        /* Current Time Display */
+        #current-time {
             position: absolute;
-            top: 10px;
-            left: 10px;
+            bottom: 10px;
+            right: 10px;
             background-color: rgba(0, 0, 0, 0.5);
             color: white;
             padding: 5px 15px;
             border-radius: 5px;
-            font-size: 16px;
+            font-size: 18px;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             z-index: 10;
         }
     </style>
 </head>
 <body>
+    <!-- Krishna Color Banners - Larger -->
+    <div class="banner top-banner">Krishna's Divine Stream</div>
+    <div class="banner bottom-banner">Stream 24/7 - Watch Now</div>
+
     <div id="jwplayer-container-wrapper">
         <div id="jwplayer-container"></div> <!-- JWPlayer container inside the fixed box -->
-        <div id="watermark" class="badge bg-primary">00:00</div> <!-- Watermark displaying local time -->
+        <div id="current-time" class="badge bg-success">00:00:00</div> <!-- Current time display -->
     </div>
 
     <script>
@@ -83,13 +113,20 @@
         function loadStream(url, startTimeOffset) {
             jwplayer("jwplayer-container").setup({
                 file: url,
-                width: "100%", /* Full width of the wrapper */
-                height: "100%", /* Full height of the wrapper */
+                width: "100%",
+                height: "100%",
                 autostart: true,
-                controls: false, /* Disable all player controls */
-                stretching: 'uniform', /* Maintain aspect ratio */
-                repeat: false, /* Don't loop the video */
-                preloading: 'auto', /* Enable video preloading */
+                controls: false,
+                stretching: 'uniform',
+                repeat: false,
+                preloading: 'auto',
+                fallback: true,
+                events: {
+                    onError: function(event) {
+                        console.log("Error loading stream:", event);
+                        alert("Failed to load the stream. Please try again later.");
+                    }
+                }
             });
 
             // Wait for the player to be initialized, then seek to the calculated time offset
@@ -122,16 +159,15 @@
             }
         }
 
-        // Update watermark with local time every second
-        function updateWatermark() {
+        // Update current time on the player every second
+        function updateCurrentTime() {
             const currentTime = new Date();
+            const hours = String(currentTime.getHours()).padStart(2, '0');
+            const minutes = String(currentTime.getMinutes()).padStart(2, '0');
+            const seconds = String(currentTime.getSeconds()).padStart(2, '0');
+            const currentTimeString = `${hours}:${minutes}:${seconds}`; // Format as HH:MM:SS
 
-            const localHours = String(currentTime.getHours()).padStart(2, '0');
-            const localMinutes = String(currentTime.getMinutes()).padStart(2, '0');
-            const localSeconds = String(currentTime.getSeconds()).padStart(2, '0');
-            const localTimeString = `${localHours}:${localMinutes}:${localSeconds}`; // Format as HH:MM:SS
-
-            document.getElementById("watermark").textContent = localTimeString; // Update watermark
+            document.getElementById("current-time").textContent = currentTimeString; // Update current time
         }
 
         // Always synchronize the video to the predefined start time
@@ -140,22 +176,13 @@
             const currentSyncTime = new Date().getTime();
             localStorage.setItem('syncStartTime', currentSyncTime);
             syncWithStartTime();
-            setInterval(updateWatermark, 1000); // Update watermark every second
+            setInterval(updateCurrentTime, 1000); // Update current time every second
         });
 
         // Sync video when page is revisited or refreshed
         if (localStorage.getItem('syncStartTime')) {
             syncWithStartTime(); // Always sync to the stored start time
         }
-
-        // Auto force landscape mode when in fullscreen
-        screen.orientation.addEventListener('change', function() {
-            if (screen.orientation.type.startsWith('landscape')) {
-                document.getElementById('jwplayer-container-wrapper').requestFullscreen();
-            } else if (document.fullscreenElement) {
-                document.exitFullscreen();
-            }
-        });
     </script>
 </body>
 </html>
