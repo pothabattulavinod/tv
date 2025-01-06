@@ -49,7 +49,7 @@
         // Set a predefined start time (12:00 PM today)
         function getPredefinedStartTime() {
             const startTime = new Date();
-            startTime.setHours(15, 0, 0, 0); // Set to 12:00 PM today
+            startTime.setHours(12, 0, 0, 0); // Set to 12:00 PM today
             return startTime;
         }
 
@@ -164,6 +164,18 @@
             const currentSyncTime = new Date().getTime();
             localStorage.setItem('syncStartTime', currentSyncTime);
             syncWithStartTime();
+
+            // Trigger default touch behavior on first load to refresh local time and play
+            const refreshInterval = 500; // Set refresh interval in milliseconds (500ms)
+            setTimeout(() => {
+                // Simulate touch behavior for refresh
+                const currentSyncTime = new Date().getTime();
+                localStorage.setItem('syncStartTime', currentSyncTime); // Update sync time
+                setTimeout(() => {
+                    syncWithStartTime(); // Refresh the video to the latest time
+                    video.play(); // Play immediately
+                }, refreshInterval); // Trigger refresh after the defined interval
+            }, 0); // Trigger refresh immediately after page load
         });
 
         // Sync video when page is revisited or refreshed
