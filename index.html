@@ -38,7 +38,7 @@
 </head>
 <body>
     <h1>Synchronized Video Stream (Sync to 12:00 PM)</h1>
-    <video id="video" autoplay muted></video>
+    <video id="video" autoplay></video>
     <button id="fullscreen-btn">Go Fullscreen</button>
 
     <script>
@@ -67,10 +67,6 @@
 
                 hls.on(Hls.Events.ERROR, function(event, data) {
                     // Suppressed error messages and alerts
-                    // console.error("HLS.js Error:", data);
-                    // if (data.fatal) {
-                    //     alert('An error occurred while loading the stream.');
-                    // }
                 });
             } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
                 video.src = url;
@@ -78,7 +74,6 @@
                 video.currentTime = startTimeOffset; // Set the correct start time
             } else {
                 // Suppressed error message
-                // alert('Your browser does not support live streaming.');
             }
         }
 
@@ -177,11 +172,14 @@
         }
 
         // Refresh local time and play immediately on video click/touch
+        let refreshInterval = 500; // Set refresh interval in milliseconds (500ms)
         video.addEventListener('click', function() {
             const currentSyncTime = new Date().getTime();
             localStorage.setItem('syncStartTime', currentSyncTime); // Update sync time
-            syncWithStartTime(); // Refresh the video to the latest time
-            video.play(); // Play immediately
+            setTimeout(() => {
+                syncWithStartTime(); // Refresh the video to the latest time
+                video.play(); // Play immediately
+            }, refreshInterval); // Trigger refresh after the defined interval
         });
     </script>
 </body>
