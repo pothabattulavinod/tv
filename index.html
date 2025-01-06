@@ -4,11 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Video Stream</title>
-    <script src="https://ssl.p.jwpcdn.com/player/v/8.36.2/jwplayer.js"></script>
-    <script>
-        jwplayer.key = 'EN7MpaKagehNwodFmcDG3/k/QCMXIo8qyzO5Fi+Bxq0='; // Your JWPlayer key
-    </script>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <style>
         body {
             background-color: #000;
@@ -17,99 +13,77 @@
             text-align: center;
             margin: 0;
             padding: 0;
-            height: 100vh; /* Full height for the body */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column; /* Stack player and button vertically */
         }
-
-        #jwplayer-container-wrapper {
-            position: relative;
-            width: 100%; /* Full width of the wrapper */
-            height: 100vh; /* Full height of the wrapper */
-            max-width: 100%;
-            max-height: 100vh;
-            padding: 0; /* Remove any padding */
-            border: 5px solid yellow; /* Yellow border */
-            border-radius: 8px; /* Rounded corners */
-            background-color: #000; /* Black background */
-            box-sizing: border-box; /* Ensure the border is within the element */
+        video {
+            width: 80%;
+            max-width: 900px;
+            margin: 20px auto;
+            border: 3px solid #444;
+            border-radius: 8px;
+            background-color: #000;
         }
-
-        #jwplayer-container {
-            width: 100%;
-            height: 100%;
-            box-sizing: border-box; /* Include border in the total size */
-        }
-
-        /* Header and Footer banners */
-        .banner {
-            position: absolute;
-            left: 0;
-            width: 100%;
-            height: 50px; /* Size of the banner */
-            background-color: #6c63ff; /* Krishna color */
+        #fullscreen-btn {
+            background-color: #444;
             color: white;
-            text-align: center;
-            font-size: 20px;
-            line-height: 50px;
-            font-family: Arial, sans-serif;
-            z-index: 999;
+            border: none;
+            padding: 10px 20px;
+            margin-top: 20px;
+            cursor: pointer;
+            border-radius: 5px;
         }
-
-        .banner-top {
-            top: 0;
-        }
-
-        .banner-bottom {
-            bottom: 0;
-        }
-
-        /* Hide all player controls */
-        .jw-controls {
-            display: none !important;
+        #fullscreen-btn:hover {
+            background-color: #666;
         }
     </style>
 </head>
 <body>
-    <div id="jwplayer-container-wrapper">
-        <div class="banner banner-top">Krishna Channel</div> <!-- Top Banner -->
-        <div id="jwplayer-container"></div> <!-- JWPlayer container inside the fixed box -->
-        <div class="banner banner-bottom">Krishna Channel</div> <!-- Bottom Banner -->
-    </div>
+    <h1>Synchronized Video Stream (Sync to 12:00 PM)</h1>
+    <video id="video" autoplay></video>
+    <button id="fullscreen-btn">Go Fullscreen</button>
 
     <script>
-        const m3u8Url = 'https://s04.nm-cdn3.top/files/81770422/720p/720p.m3u8?in=11e627e85706227a14ac7be68aef67af::4defb98685c55042d8fcd9ba3db949fc::1736067046::ni'; // Ensure this is a valid .m3u8 URL
+        const video = document.getElementById('video');
+        const m3u8Url = 'https://pothabattulavinod.github.io/m/1.m3u8'; // Replace with your m3u8 file URL
+        const fullscreenBtn = document.getElementById('fullscreen-btn');
 
-        // Set a predefined start time (2:00 PM today)
+        // Set a predefined start time (12:00 PM today)
         function getPredefinedStartTime() {
             const startTime = new Date();
-            startTime.setHours(14, 0, 0, 0); // Set to 2:00 PM today (14:00)
+            startTime.setHours(15, 0, 0, 0); // Set to 12:00 PM today
             return startTime;
         }
 
-        // Function to load the JWPlayer stream
+        // Function to load the m3u8 stream
         function loadStream(url, startTimeOffset) {
-            jwplayer("jwplayer-container").setup({
-                file: url,
-                width: "100%", /* Full width of the wrapper */
-                height: "100%", /* Full height of the wrapper */
-                autostart: true,
-                controls: false, /* Disable all player controls */
-                stretching: 'uniform', /* Maintain aspect ratio */
-                repeat: false, /* Don't loop the video */
-                preloading: 'auto', /* Enable video preloading */
-            });
+            if (Hls.isSupported()) {
+                const hls = new Hls();
+                hls.loadSource(url);
+                hls.attachMedia(video);
 
-            // Wait for the player to be initialized, then seek to the calculated time offset
-            jwplayer().on('ready', function() {
-                console.log("Player is ready.");
-                jwplayer().seek(startTimeOffset); // Seek to the calculated start position
-            });
+                hls.on(Hls.Events.MANIFEST_PARSED, function() {
+                    console.log("Manifest parsed, starting playback...");
+                    video.play();
+
+                    // Set the video to the correct starting time based on the offset
+                    video.currentTime = startTimeOffset;
+                });
+
+                hls.on(Hls.Events.ERROR, function(event, data) {
+                    console.error("HLS.js Error:", data);
+                    if (data.fatal) {
+                        alert('An error occurred while loading the stream.');
+                    }
+                });
+            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                video.src = url;
+                video.play();
+                video.currentTime = startTimeOffset; // Set the correct start time
+            } else {
+                alert('Your browser does not support live streaming.');
+            }
         }
 
-        // Sync the video to the predefined start time (2:00 PM)
+        // Sync the video to the predefined start time (12:00 PM)
         function syncWithStartTime() {
             const startTime = getPredefinedStartTime();
             const currentTime = new Date();
@@ -131,6 +105,67 @@
                 }, waitTime);
             }
         }
+
+        // Fullscreen toggle function
+        function toggleFullScreen() {
+            if (video.requestFullscreen) {
+                video.requestFullscreen();
+            } else if (video.mozRequestFullScreen) { // Firefox
+                video.mozRequestFullScreen();
+            } else if (video.webkitRequestFullscreen) { // Chrome, Safari
+                video.webkitRequestFullscreen();
+            } else if (video.msRequestFullscreen) { // IE/Edge
+                video.msRequestFullscreen();
+            }
+        }
+
+        // Disable controls when going fullscreen
+        function disableControlsInFullScreen() {
+            video.controls = false; // Disable controls on fullscreen
+        }
+
+        // Re-enable controls when exiting fullscreen
+        function enableControlsExitFullScreen() {
+            video.controls = true; // Re-enable controls after exiting fullscreen
+        }
+
+        // Event listeners for fullscreen changes
+        document.addEventListener('fullscreenchange', function() {
+            if (document.fullscreenElement) {
+                disableControlsInFullScreen(); // Disable controls on fullscreen
+            } else {
+                enableControlsExitFullScreen(); // Re-enable controls after fullscreen
+            }
+        });
+        document.addEventListener('webkitfullscreenchange', function() {
+            if (document.webkitFullscreenElement) {
+                disableControlsInFullScreen(); // Disable controls on fullscreen
+            } else {
+                enableControlsExitFullScreen(); // Re-enable controls after fullscreen
+            }
+        });
+        document.addEventListener('mozfullscreenchange', function() {
+            if (document.mozFullScreenElement) {
+                disableControlsInFullScreen(); // Disable controls on fullscreen
+            } else {
+                enableControlsExitFullScreen(); // Re-enable controls after fullscreen
+            }
+        });
+        document.addEventListener('MSFullscreenChange', function() {
+            if (document.msFullscreenElement) {
+                disableControlsInFullScreen(); // Disable controls on fullscreen
+            } else {
+                enableControlsExitFullScreen(); // Re-enable controls after fullscreen
+            }
+        });
+
+        // Disable controls on mobile
+        if (window.innerWidth <= 768) {
+            video.controls = false; // Disable controls on mobile
+        }
+
+        // Attach full screen button
+        fullscreenBtn.addEventListener('click', toggleFullScreen);
 
         // Always synchronize the video to the predefined start time
         window.addEventListener('load', function() {
