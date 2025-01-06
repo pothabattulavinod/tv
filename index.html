@@ -21,28 +21,26 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            flex-direction: column; /* Stack player and button vertically */
         }
 
         #jwplayer-container-wrapper {
             position: relative;
-            width: 100%;
-            height: 100vh;
+            width: 100%; /* Full width of the wrapper */
+            height: 100vh; /* Full height of the wrapper */
             max-width: 100%;
             max-height: 100vh;
             padding: 0; /* Remove any padding */
             border: 5px solid yellow; /* Yellow border */
             border-radius: 8px; /* Rounded corners */
-            background-color: #000;
+            background-color: #000; /* Black background */
             box-sizing: border-box; /* Ensure the border is within the element */
-            margin-top: 0; /* No top margin */
-            margin-bottom: 0; /* No bottom margin */
         }
 
         #jwplayer-container {
             width: 100%;
             height: 100%;
-            box-sizing: border-box; /* Ensure the player fits perfectly inside the wrapper */
-            position: relative; /* Set relative positioning for the watermark */
+            box-sizing: border-box; /* Include border in the total size */
         }
 
         /* Hide all player controls */
@@ -53,15 +51,15 @@
         /* Watermark styling */
         #watermark {
             position: absolute;
-            top: 0; /* Align the watermark with the top edge of the video */
-            left: 0; /* Align the watermark with the left edge of the video */
-            background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+            top: 10px;
+            left: 10px;
+            background-color: rgba(0, 0, 0, 0.5);
             color: white;
             padding: 5px 15px;
             border-radius: 5px;
             font-size: 16px;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            z-index: 10; /* Ensure it's on top of the video */
+            z-index: 10;
         }
     </style>
 </head>
@@ -149,6 +147,15 @@
         if (localStorage.getItem('syncStartTime')) {
             syncWithStartTime(); // Always sync to the stored start time
         }
+
+        // Auto force landscape mode when in fullscreen
+        screen.orientation.addEventListener('change', function() {
+            if (screen.orientation.type.startsWith('landscape')) {
+                document.getElementById('jwplayer-container-wrapper').requestFullscreen();
+            } else if (document.fullscreenElement) {
+                document.exitFullscreen();
+            }
+        });
     </script>
 </body>
 </html>
