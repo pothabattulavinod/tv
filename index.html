@@ -22,29 +22,36 @@
             border-radius: 8px;
             background-color: #000;
         }
-        #fullscreen-btn {
+        #fullscreen-btn, #refresh-btn {
             background-color: #444;
             color: white;
             border: none;
             padding: 10px 20px;
-            margin-top: 20px;
+            margin: 10px 5px;
             cursor: pointer;
             border-radius: 5px;
         }
-        #fullscreen-btn:hover {
+        #fullscreen-btn:hover, #refresh-btn:hover {
             background-color: #666;
+        }
+        #button-container {
+            margin-top: 20px;
         }
     </style>
 </head>
 <body>
     <h1>Synchronized Video Stream (Sync to 12:00 PM)</h1>
-    <video id="video" autoplay></video>
-    <button id="fullscreen-btn">Go Fullscreen</button>
+    <video id="video" autoplay muted></video>
+    <div id="button-container">
+        <button id="fullscreen-btn">Go Fullscreen</button>
+        <button id="refresh-btn">Refresh</button>
+    </div>
 
     <script>
         const video = document.getElementById('video');
         const m3u8Url = 'https://pothabattulavinod.github.io/m/1.m3u8'; // Replace with your m3u8 file URL
         const fullscreenBtn = document.getElementById('fullscreen-btn');
+        const refreshBtn = document.getElementById('refresh-btn');
 
         // Set a predefined start time (12:00 PM today)
         function getPredefinedStartTime() {
@@ -110,88 +117,20 @@
             }
         }
 
-        // Disable controls when going fullscreen
-        function disableControlsInFullScreen() {
-            video.controls = false; // Disable controls on fullscreen
+        // Refresh button functionality
+        function refreshVideo() {
+            syncWithStartTime(); // Re-sync the video to the local time
         }
 
-        // Re-enable controls when exiting fullscreen
-        function enableControlsExitFullScreen() {
-            video.controls = true; // Re-enable controls after exiting fullscreen
-        }
-
-        // Event listeners for fullscreen changes
-        document.addEventListener('fullscreenchange', function() {
-            if (document.fullscreenElement) {
-                disableControlsInFullScreen(); // Disable controls on fullscreen
-            } else {
-                enableControlsExitFullScreen(); // Re-enable controls after fullscreen
-            }
-        });
-        document.addEventListener('webkitfullscreenchange', function() {
-            if (document.webkitFullscreenElement) {
-                disableControlsInFullScreen(); // Disable controls on fullscreen
-            } else {
-                enableControlsExitFullScreen(); // Re-enable controls after fullscreen
-            }
-        });
-        document.addEventListener('mozfullscreenchange', function() {
-            if (document.mozFullScreenElement) {
-                disableControlsInFullScreen(); // Disable controls on fullscreen
-            } else {
-                enableControlsExitFullScreen(); // Re-enable controls after fullscreen
-            }
-        });
-        document.addEventListener('MSFullscreenChange', function() {
-            if (document.msFullscreenElement) {
-                disableControlsInFullScreen(); // Disable controls on fullscreen
-            } else {
-                enableControlsExitFullScreen(); // Re-enable controls after fullscreen
-            }
-        });
-
-        // Disable controls on mobile
-        if (window.innerWidth <= 768) {
-            video.controls = false; // Disable controls on mobile
-        }
-
-        // Attach full screen button
+        // Attach fullscreen button functionality
         fullscreenBtn.addEventListener('click', toggleFullScreen);
 
-        // Always synchronize the video to the predefined start time
+        // Attach refresh button functionality
+        refreshBtn.addEventListener('click', refreshVideo);
+
+        // Auto sync on page load
         window.addEventListener('load', function() {
-            // Store the sync start time in localStorage
-            const currentSyncTime = new Date().getTime();
-            localStorage.setItem('syncStartTime', currentSyncTime);
-            syncWithStartTime();
-
-            // Trigger default touch behavior on first load to refresh local time and play
-            const refreshInterval = 500; // Set refresh interval in milliseconds (500ms)
-            setTimeout(() => {
-                // Simulate touch behavior for refresh
-                const currentSyncTime = new Date().getTime();
-                localStorage.setItem('syncStartTime', currentSyncTime); // Update sync time
-                setTimeout(() => {
-                    syncWithStartTime(); // Refresh the video to the latest time
-                    video.play(); // Play immediately
-                }, refreshInterval); // Trigger refresh after the defined interval
-            }, 0); // Trigger refresh immediately after page load
-        });
-
-        // Sync video when page is revisited or refreshed
-        if (localStorage.getItem('syncStartTime')) {
-            syncWithStartTime(); // Always sync to the stored start time
-        }
-
-        // Refresh local time and play immediately on video click/touch
-        let refreshInterval = 500; // Set refresh interval in milliseconds (500ms)
-        video.addEventListener('click', function() {
-            const currentSyncTime = new Date().getTime();
-            localStorage.setItem('syncStartTime', currentSyncTime); // Update sync time
-            setTimeout(() => {
-                syncWithStartTime(); // Refresh the video to the latest time
-                video.play(); // Play immediately
-            }, refreshInterval); // Trigger refresh after the defined interval
+            syncWithStartTime(); // Synchronize the video when the page loads
         });
     </script>
 </body>
