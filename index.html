@@ -37,10 +37,10 @@
 
         #movie-title {
             position: absolute;
-            top: 10%;
+            top: 15%;
             right: 2%;
             color: white;
-            font-size: 14px;
+            font-size: 10px;
             font-weight: bold;
             z-index: 1;
             pointer-events: none;
@@ -79,10 +79,15 @@
         #video-container.fullscreen {
             border: none;
         }
+
+        #time-display {
+            margin-top: 10px;
+            font-size: 20px;
+        }
     </style>
 </head>
 <body>
-    <h1>QODEGN MEDIA</h1>
+    <h1>Qodegen Media</h1>
     <div id="video-container">
         <video id="video" autoplay muted></video>
         <div id="movie-title">Saripodhaa Sanivaaram</div>
@@ -94,6 +99,9 @@
         <button id="refresh-btn">Refresh</button>
     </div>
 
+    <!-- Display the current local time -->
+    <div id="time-display"></div>
+
     <script>
         const video = document.getElementById('video');
         const m3u8Url = 'https://pothabattulavinod.github.io/m/1.m3u8';
@@ -103,6 +111,25 @@
         const loadingIndicator = document.getElementById('loading-indicator');
         const movieTitle = document.getElementById('movie-title');
         const videoContainer = document.getElementById('video-container');
+        const timeDisplay = document.getElementById('time-display');
+
+        // Function to update local time instantly
+        function updateLocalTime() {
+            const currentTime = new Date().toLocaleTimeString();
+            timeDisplay.textContent = `Local Time: ${currentTime}`;
+        }
+
+        // Update the local time every second
+        setInterval(updateLocalTime, 1000);
+
+        // Function to clear local storage and update instantly
+        function clearLocalStorageAndUpdate() {
+            localStorage.clear(); // Clears the local storage
+            console.log('LocalStorage cleared at', new Date().toLocaleTimeString());
+        }
+
+        // Call the function to clear local storage as soon as the page loads
+        clearLocalStorageAndUpdate();
 
         function showLoading() {
             loadingIndicator.style.display = 'block';
@@ -114,7 +141,7 @@
 
         function getPredefinedStartTime() {
             const startTime = new Date();
-            startTime.setHours(17, 0, 0, 0);
+            startTime.setHours(16, 0, 0, 0);
             return startTime;
         }
 
