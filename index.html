@@ -74,6 +74,11 @@
             font-size: 16px;
             display: none;
         }
+
+        /* Remove border in fullscreen */
+        #video-container.fullscreen {
+            border: none;
+        }
     </style>
 </head>
 <body>
@@ -97,6 +102,7 @@
         const refreshBtn = document.getElementById('refresh-btn');
         const loadingIndicator = document.getElementById('loading-indicator');
         const movieTitle = document.getElementById('movie-title');
+        const videoContainer = document.getElementById('video-container');
 
         function showLoading() {
             loadingIndicator.style.display = 'block';
@@ -158,7 +164,6 @@
         }
 
         function toggleFullScreen() {
-            const videoContainer = document.getElementById('video-container');
             if (!document.fullscreenElement) {
                 videoContainer.requestFullscreen().then(() => {
                     if (screen.orientation && screen.orientation.lock) {
@@ -191,10 +196,12 @@
                 movieTitle.style.display = 'block';
                 minimizeBtn.style.display = 'inline-block';
                 fullscreenBtn.style.display = 'none';
+                videoContainer.classList.add('fullscreen');
             } else {
                 movieTitle.style.display = 'none';
                 minimizeBtn.style.display = 'none';
                 fullscreenBtn.style.display = 'inline-block';
+                videoContainer.classList.remove('fullscreen');
             }
         }
 
