@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Stream</title>
+    <script src="https://ssl.p.jwpcdn.com/player/v/8.36.2/jwplayer.js"></script>
+    <script>
+        jwplayer.key = 'EN7MpaKagehNwodFmcDG3/k/QCMXIo8qyzO5Fi+Bxq0='; // Your JWPlayer key
+    </script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #000;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            height: 100vh; /* Full height for the body */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #jwplayer-container-wrapper {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            max-width: 100%;
+            max-height: 100vh;
+            padding: 0; /* Remove any padding */
+            border: 5px solid yellow; /* Yellow border */
+            border-radius: 8px; /* Rounded corners */
+            background-color: #000;
+            box-sizing: border-box; /* Ensure the border is within the element */
+            margin-top: 0; /* No top margin */
+            margin-bottom: 0; /* No bottom margin */
+        }
+
+        #jwplayer-container {
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box; /* Ensure the player fits perfectly inside the wrapper */
+            position: relative; /* Set relative positioning for the watermark */
+        }
+
+        /* Hide all player controls */
+        .jw-controls {
+            display: none !important;
+        }
+
+        /* Watermark styling */
+        #watermark {
+            position: absolute;
+            top: 0; /* Align the watermark with the top edge of the video */
+            left: 0; /* Align the watermark with the left edge of the video */
+            background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+            color: white;
+            padding: 5px 15px;
+            border-radius: 5px;
+            font-size: 16px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            z-index: 10; /* Ensure it's on top of the video */
+        }
+    </style>
+</head>
+<body>
+    <div id="jwplayer-container-wrapper">
+        <div id="jwplayer-container"></div> <!-- JWPlayer container inside the fixed box -->
+        <div id="watermark" class="badge bg-primary">00:00</div> <!-- Watermark displaying local time -->
+    </div>
+
+    <script>
+        const m3u8Url = 'https://pothabattulavinod.github.io/m/1.m3u8'; // Ensure this is a valid .m3u8 URL
+
+        // Set a predefined start time (1:00 PM today)
+        function getPredefinedStartTime() {
+            const startTime = new Date();
+            startTime.setHours(13, 0, 0, 0); // Set to 1:00 PM today
+            return startTime;
+        }
+
+        // Function to load the JWPlayer stream
+        function loadStream(url, startTimeOffset) {
+            jwplayer("jwplayer-container").setup({
+                file: url,
+                width: "100%", /* Full width of the wrapper */
+                height: "100%", /* Full height of the wrapper */
+                autostart: true,
+                controls: false, /* Disable all player controls */
+                stretching: 'uniform', /* Maintain aspect ratio */
+                repeat: false, /* Don't loop the video */
+                preloading: 'auto', /* Enable video preloading */
+            });
+
+            // Wait for the player to be initialized, then seek to the calculated time offset
+            jwplayer().on('ready', function() {
+                console.log("Player is ready.");
+                jwplayer().seek(startTimeOffset); // Seek to the calculated start position
+            });
+        }
+
+        // Sync the video to the predefined start time (1:00 PM)
+        function syncWithStartTime() {
+            const startTime = getPredefinedStartTime();
+            const currentTime = new Date();
+            const timeDifference = currentTime - startTime; // Time difference from the start time
+
+            // If the current time is after the predefined start time, calculate the start time offset
+            if (timeDifference >= 0) {
+                const startTimeOffset = timeDifference / 1000; // Convert milliseconds to seconds
+                console.log(`Current time is: ${currentTime}`);
+                console.log(`Start time offset is: ${startTimeOffset} seconds`);
+                loadStream(m3u8Url, startTimeOffset); // Start stream at the correct offset
+            } else {
+                // If it's before the predefined start time, wait until the start time
+                const waitTime = Math.abs(timeDifference);
+                console.log(`Waiting for ${Math.floor(waitTime / 1000)} seconds...`);
+                setTimeout(() => {
+                    const startTimeOffset = 0; // Start at the beginning of the stream
+                    loadStream(m3u8Url, startTimeOffset);
+                }, waitTime);
+            }
+        }
+
+        // Update watermark with local time every second
+        function updateWatermark() {
+            const currentTime = new Date();
+
+            const localHours = String(currentTime.getHours()).padStart(2, '0');
+            const localMinutes = String(currentTime.getMinutes()).padStart(2, '0');
+            const localSeconds = String(currentTime.getSeconds()).padStart(2, '0');
+            const localTimeString = `${localHours}:${localMinutes}:${localSeconds}`; // Format as HH:MM:SS
+
+            document.getElementById("watermark").textContent = localTimeString; // Update watermark
+        }
+
+        // Always synchronize the video to the predefined start time
+        window.addEventListener('load', function() {
+            // Store the sync start time in localStorage
+            const currentSyncTime = new Date().getTime();
+            localStorage.setItem('syncStartTime', currentSyncTime);
+            syncWithStartTime();
+            setInterval(updateWatermark, 1000); // Update watermark every second
+        });
+
+        // Sync video when page is revisited or refreshed
+        if (localStorage.getItem('syncStartTime')) {
+            syncWithStartTime(); // Always sync to the stored start time
+        }
+    </script>
+</body>
+</html>
