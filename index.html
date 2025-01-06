@@ -160,13 +160,23 @@
         function toggleFullScreen() {
             const videoContainer = document.getElementById('video-container');
             if (!document.fullscreenElement) {
-                videoContainer.requestFullscreen();
+                videoContainer.requestFullscreen().then(() => {
+                    if (screen.orientation && screen.orientation.lock) {
+                        screen.orientation.lock('landscape').catch((err) => {
+                            console.warn("Screen orientation lock failed:", err);
+                        });
+                    }
+                });
             }
         }
 
         function minimizeFullScreen() {
             if (document.exitFullscreen) {
-                document.exitFullscreen();
+                document.exitFullscreen().then(() => {
+                    if (screen.orientation && screen.orientation.unlock) {
+                        screen.orientation.unlock();
+                    }
+                });
             }
         }
 
